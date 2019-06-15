@@ -39,7 +39,7 @@ CREATE TABLE Animal_History (
   move_in_date));
 CREATE TABLE Employee (
   id                  number(6) NOT NULL, 
-  location_id         number(6) NOT NULL, 
+  location_id         number(6), 
   first_name          varchar2(255) NOT NULL, 
   last_name           varchar2(255) NOT NULL, 
   job_title           varchar2(255) NOT NULL, 
@@ -116,16 +116,16 @@ INSERT INTO Employee (id, location_id, first_name, last_name, job_title, supervi
 VALUES (SEQ_EMPLOYEE.nextval, (SELECT l.id FROM Location l WHERE name = 'A1.1'), 'Alec', 'Pavlovsky', 'PRESIDENT', NULL);
 INSERT INTO Employee (id, location_id, first_name, last_name, job_title, supervisor_id) 
 VALUES (SEQ_EMPLOYEE.nextval, NULL, 'Steve', 'Wozniak', 'CARETAKER', 
-    (SELECT e.id FROM employees e WHERE e.job_title = 'PRESIDENT'));
+    (SELECT e.id FROM employee e WHERE e.job_title = 'PRESIDENT'));
 INSERT INTO Employee (id, location_id, first_name, last_name, job_title, supervisor_id) 
 VALUES (SEQ_EMPLOYEE.nextval, NULL, 'Steve', 'Kowalski', 'CARETAKER', 
-    (SELECT e.id FROM employees e WHERE e.job_title = 'PRESIDENT'));
+    (SELECT e.id FROM employee e WHERE e.job_title = 'PRESIDENT'));
 INSERT INTO Employee (id, location_id, first_name, last_name, job_title, supervisor_id) 
 VALUES (SEQ_EMPLOYEE.nextval, NULL, 'Steve', 'Stevenson', 'SANITOR', 
-    (SELECT e.id FROM employees e WHERE e.job_title = 'PRESIDENT'));
+    (SELECT e.id FROM employee e WHERE e.job_title = 'PRESIDENT'));
 INSERT INTO Employee (id, location_id, first_name, last_name, job_title, supervisor_id) 
 VALUES (SEQ_EMPLOYEE.nextval, NULL, 'Steve', 'Smith', 'SANITOR', 
-    (SELECT e.id FROM employees e WHERE e.job_title = 'PRESIDENT'));
+    (SELECT e.id FROM employee e WHERE e.job_title = 'PRESIDENT'));
 --SPECIES
 INSERT INTO Species(id, common_name, scientific_name, conservation_status, description) 
 VALUES (SEQ_SPECIES.nextval, 'Plains Zebra' , 'Equus quagga', 'NT', 
@@ -164,23 +164,23 @@ VALUES (SEQ_ANIMAL.nextval, (SELECT l.id FROM Location l WHERE l.name = 'A3'), s
 -- TASKS
 INSERT INTO Task(task_id, animal_id, employee_id, location_id, assigned_at, deadline, description) 
 VALUES (SEQ_TASK.nextval, (SELECT a.id FROM animal a WHERE LOWER(a.name) = 'antek'),
-    (SELECT e.id FROM employee WHERE LOWER(e.last_name) = 'wozniak' AND LOWER(e.job_title) = 'caretaker'),
+    (SELECT e.id FROM employee WHERE LOWER(e.last_name) = 'wozniak' AND LOWER(job_title) = 'caretaker'),
     NULL, sysdate - 1, sysdate + 1, 'give medicine');
 INSERT INTO Task(task_id, animal_id, employee_id, location_id, assigned_at, deadline, description) 
 VALUES (SEQ_TASK.nextval, (SELECT a.id FROM animal a WHERE LOWER(a.name) = 'agata'),
-    (SELECT e.id FROM employee WHERE LOWER(e.last_name) = 'wozniak' AND LOWER(e.job_title) = 'caretaker'),
+    (SELECT e.id FROM employee WHERE LOWER(e.last_name) = 'wozniak' AND LOWER(job_title) = 'caretaker'),
     NULL, sysdate - 1, sysdate + 1, 'give medicine');
 INSERT INTO Task(task_id, animal_id, employee_id, location_id, assigned_at, deadline, description) 
 VALUES (SEQ_TASK.nextval, (SELECT a.id FROM animal a WHERE name IS NULL),
-    (SELECT e.id FROM employee WHERE LOWER(e.last_name) = 'kowalski' AND LOWER(e.job_title) = 'caretaker'),
+    (SELECT e.id FROM employee WHERE LOWER(e.last_name) = 'kowalski' AND LOWER(job_title) = 'caretaker'),
     NULL, sysdate, sysdate, 'feed');
 INSERT INTO Task(task_id, animal_id, employee_id, location_id, assigned_at, deadline, description) 
 VALUES (SEQ_TASK.nextval, NULL,
-    (SELECT e.id FROM employee WHERE LOWER(e.last_name) = 'stevenson' AND LOWER(e.job_title) = 'sanitor'),
+    (SELECT e.id FROM employee WHERE LOWER(e.last_name) = 'stevenson' AND LOWER(job_title) = 'sanitor'),
     (SELECT l.id FROM location l WHERE LOWER(a.name) = 'a2'), sysdate - 1, sysdate + 1, 'clean enclosure');
 INSERT INTO Task(task_id, animal_id, employee_id, location_id, assigned_at, deadline, description) 
 VALUES (SEQ_TASK.nextval, NULL,
-    (SELECT e.id FROM employee WHERE LOWER(e.last_name) = 'smith' AND LOWER(e.job_title) = 'sanitor'),
+    (SELECT e.id FROM employee WHERE LOWER(e.last_name) = 'smith' AND LOWER(job_title) = 'sanitor'),
     (SELECT l.id FROM location l WHERE name='A3'), sysdate - 1, sysdate + 1, 'clean enclosure');
     
 -- WORK TIME  
