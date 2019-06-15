@@ -1,5 +1,6 @@
 DROP TRIGGER update_animal_history;
 DROP PROCEDURE add_animal_history;
+DROP SEQUENCE seq_Testing;
 DROP SEQUENCE seq_Equipment;
 DROP SEQUENCE seq_Location;
 DROP SEQUENCE seq_Species;
@@ -15,6 +16,7 @@ DROP TABLE Species CASCADE CONSTRAINTS;
 DROP TABLE Task CASCADE CONSTRAINTS;
 DROP TABLE Work_Time CASCADE CONSTRAINTS;
 
+CREATE SEQUENCE seq_Testing;
 CREATE SEQUENCE seq_Equipment;
 CREATE SEQUENCE seq_Location;
 CREATE SEQUENCE seq_Species;
@@ -34,7 +36,7 @@ CREATE TABLE Animal_History (
   animal_id     number(6) NOT NULL, 
   move_in_date  date NOT NULL, 
   location_id   number(6) NOT NULL, 
-  move_out_date date UNIQUE, 
+  move_out_date date, 
   PRIMARY KEY (animal_id, 
   move_in_date));
 CREATE TABLE Employee (
@@ -229,25 +231,27 @@ CREATE OR REPLACE PROCEDURE add_animal_history
 )
 IS
 BEGIN
-INSERT INTO animal_history (animal_id, move_in_date, move_out_date, location_id)
-VALUES(p_animal_id, p_move_in_date, NULL,  p_location_id);
 UPDATE animal_history
 SET move_out_date = p_move_in_date
 WHERE move_in_date = 
 	(SELECT max(move_in_date) FROM Animal_History WHERE animal_id = p_animal_id);
+INSERT INTO animal_history (animal_id, move_in_date, move_out_date, location_id)
+VALUES(p_animal_id, p_move_in_date, NULL,  p_location_id);
+
 END add_animal_history;
 /
 CREATE OR REPLACE TRIGGER update_animal_history
   AFTER UPDATE OF location_id ON animal
   FOR EACH ROW
 BEGIN
-  add_animal_history(:old.id, sysdate,
+  add_animal_history(:old.id, sysdate + seq_TESTING.nextval,
                   :new.location_id);
 END;
 /
 ALTER TRIGGER update_animal_history ENABLE;
 /
 
+-- FILL
 UPDATE animal
 SET location_id = (SELECT id FROM Location WHERE name = 'A3')
 WHERE id = (SELECT id FROM animal WHERE name = 'Antek');
@@ -262,5 +266,8 @@ SET location_id = (SELECT id FROM Location WHERE name = 'A2')
 WHERE id = (SELECT id FROM animal WHERE name = 'Antek');
 UPDATE animal
 SET location_id = (SELECT id FROM Location WHERE name = 'A3')
+WHERE id = (SELECT id FROM animal WHERE name = 'Antek');
+UPDATE animal
+SET location_id = (SELECT id FROM Location WHERE name = 'A2')
 WHERE id = (SELECT id FROM animal WHERE name = 'Antek');
 
