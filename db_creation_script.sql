@@ -4,6 +4,8 @@ DROP SEQUENCE seq_Equipment;
 DROP SEQUENCE seq_Location;
 DROP SEQUENCE seq_Species;
 DROP SEQUENCE seq_Task;
+DROP SEQUENCE seq_Animal;
+DROP SEQUENCE seq_Employee;
 DROP TABLE Animal CASCADE CONSTRAINTS;
 DROP TABLE Animal_History CASCADE CONSTRAINTS;
 DROP TABLE Employee CASCADE CONSTRAINTS;
@@ -17,6 +19,9 @@ CREATE SEQUENCE seq_Equipment;
 CREATE SEQUENCE seq_Location;
 CREATE SEQUENCE seq_Species;
 CREATE SEQUENCE seq_Task;
+CREATE SEQUENCE seq_Animal;
+CREATE SEQUENCE seq_Employee;
+
 CREATE TABLE Animal (
   id              number(6) NOT NULL, 
   location_id     number(6) NOT NULL, 
@@ -95,6 +100,128 @@ ALTER TABLE Work_Time ADD CONSTRAINT "FKWork_Time593473" FOREIGN KEY (employee_i
 ALTER TABLE Animal_History ADD CONSTRAINT "FKAnimal_His86946" FOREIGN KEY (animal_id) REFERENCES Animal (id) ON DELETE Cascade;
 ALTER TABLE Animal_History ADD CONSTRAINT "FKAnimal_His60152" FOREIGN KEY (location_id) REFERENCES Location (id);
 
+-- LOCATIONS
+INSERT INTO Location(id, parent_localization_id, type, name) 
+VALUES (SEQ_LOCATION.nextval, NULL, 'sector', 'sector A');
+INSERT INTO Location(id, parent_localization_id, type, name) 
+VALUES (SEQ_LOCATION.nextval, (SELECT l.id FROM Location l WHERE l.name = 'sector A'), 'building', 'A1');
+INSERT INTO Location(id, parent_localization_id, type, name) 
+VALUES (SEQ_LOCATION.nextval, (SELECT l.id FROM Location l WHERE l.name = 'building A1'), 'room', 'A1.1');
+INSERT INTO Location(id, parent_localization_id, type, name) 
+VALUES (SEQ_LOCATION.nextval, (SELECT l.id FROM Location l WHERE l.name = 'sector A'), 'enclosure', 'A2');
+INSERT INTO Location(id, parent_localization_id, type, name) 
+VALUES (SEQ_LOCATION.nextval, (SELECT l.id FROM Location l WHERE l.name = 'sector A'), 'enclosure', 'A3');
+-- EMPLOYEES
+INSERT INTO Employee (id, location_id, first_name, last_name, job_title, supervisor_id) 
+VALUES (SEQ_EMPLOYEE.nextval, (SELECT l.id FROM Location l WHERE name = 'A1.1'), 'Alec', 'Pavlovsky', 'PRESIDENT', NULL);
+INSERT INTO Employee (id, location_id, first_name, last_name, job_title, supervisor_id) 
+VALUES (SEQ_EMPLOYEE.nextval, NULL, 'Steve', 'Wozniak', 'CARETAKER', 
+    (SELECT e.id FROM employees e WHERE e.job_title = 'PRESIDENT'));
+INSERT INTO Employee (id, location_id, first_name, last_name, job_title, supervisor_id) 
+VALUES (SEQ_EMPLOYEE.nextval, NULL, 'Steve', 'Kowalski', 'CARETAKER', 
+    (SELECT e.id FROM employees e WHERE e.job_title = 'PRESIDENT'));
+INSERT INTO Employee (id, location_id, first_name, last_name, job_title, supervisor_id) 
+VALUES (SEQ_EMPLOYEE.nextval, NULL, 'Steve', 'Stevenson', 'SANITOR', 
+    (SELECT e.id FROM employees e WHERE e.job_title = 'PRESIDENT'));
+INSERT INTO Employee (id, location_id, first_name, last_name, job_title, supervisor_id) 
+VALUES (SEQ_EMPLOYEE.nextval, NULL, 'Steve', 'Smith', 'SANITOR', 
+    (SELECT e.id FROM employees e WHERE e.job_title = 'PRESIDENT'));
+--SPECIES
+INSERT INTO Species(id, common_name, scientific_name, conservation_status, description) 
+VALUES (SEQ_SPECIES.nextval, 'Plains Zebra' , 'Equus quagga', 'NT', 
+    'the most common and geographically widespread species of zebra');
+INSERT INTO Species(id, common_name, scientific_name, conservation_status, description) 
+VALUES (SEQ_SPECIES.nextval, 'Masai giraffe' , 'Giraffa camelopardalis tippelskirchii', 'VU', 
+    ' the largest subspecies of giraffe');
+INSERT INTO Species(id, common_name, scientific_name, conservation_status, description) 
+VALUES (SEQ_SPECIES.nextval, 'African bush elephant' , 'Loxodonta africana', 'VU', 
+    'the largest living terrestrial animal with bulls reaching a shoulder height of up to 4 m (13 ft).');
+INSERT INTO Species(id, common_name, scientific_name, conservation_status, description) 
+VALUES (SEQ_SPECIES.nextval, 'Lion' , 'Panthera leo', 'VU', 
+    ' it is a muscular, deep-chested cat with a short, rounded head, a reduced neck and 
+    round ears, and a hairy tuft at the end of its tail.');
+INSERT INTO Species(id, common_name, scientific_name, conservation_status, description) 
+VALUES (SEQ_SPECIES.nextval, 'Siberian tiger' , 'Panthera tigris tigris', 'EN', 
+    ' The population had been stable for more than a decade due to intensive conservation efforts, but partial surveys 
+    conducted after 2005 indicate that the Russian tiger population was declining.');
+-- ANIMALS
+INSERT INTO Animal (id, location_id, date_of_arrival, species_id, name, care_notes) 
+VALUES (SEQ_ANIMAL.nextval, (SELECT l.id FROM Location l WHERE l.name = 'A2'), sysdate - 4*7, 
+    (SELECT s.id FROM species s WHERE LOWER(s.common_name) = 'masai giraffe'), 'Antek', 'male');
+INSERT INTO Animal (id, location_id, date_of_arrival, species_id, name, care_notes) 
+VALUES (SEQ_ANIMAL.nextval, (SELECT l.id FROM Location l WHERE l.name = 'A2'), sysdate - 4*7, 
+    (SELECT s.id FROM species s WHERE LOWER(s.common_name) = 'masai giraffe'), 'Agata', 'female');
+INSERT INTO Animal (id, location_id, date_of_arrival, species_id, name, care_notes) 
+VALUES (SEQ_ANIMAL.nextval, (SELECT l.id FROM Location l WHERE l.name = 'A2'), sysdate - 4*7, 
+    (SELECT s.id FROM species s WHERE LOWER(s.common_name) = 'masai giraffe'), NULL, 'male');
+INSERT INTO Animal (id, location_id, date_of_arrival, species_id, name, care_notes) 
+VALUES (SEQ_ANIMAL.nextval, (SELECT l.id FROM Location l WHERE l.name = 'A3'), sysdate - 2*7, 
+    (SELECT s.id FROM species s WHERE LOWER(s.common_name) = 'lion'), 'Piotrek', 'male');
+INSERT INTO Animal (id, location_id, date_of_arrival, species_id, name, care_notes) 
+VALUES (SEQ_ANIMAL.nextval, (SELECT l.id FROM Location l WHERE l.name = 'A3'), sysdate - 2*7, 
+    (SELECT s.id FROM species s WHERE LOWER(s.common_name) = 'lion'), 'Grzesiek', 'male');
+
+-- TASKS
+INSERT INTO Task(task_id, animal_id, employee_id, location_id, assigned_at, deadline, description) 
+VALUES (SEQ_TASK.nextval, (SELECT a.id FROM animal a WHERE LOWER(a.name) = 'antek'),
+    (SELECT e.id FROM employee WHERE LOWER(e.last_name) = 'wozniak' AND LOWER(e.job_title) = 'caretaker'),
+    NULL, sysdate - 1, sysdate + 1, 'give medicine');
+INSERT INTO Task(task_id, animal_id, employee_id, location_id, assigned_at, deadline, description) 
+VALUES (SEQ_TASK.nextval, (SELECT a.id FROM animal a WHERE LOWER(a.name) = 'agata'),
+    (SELECT e.id FROM employee WHERE LOWER(e.last_name) = 'wozniak' AND LOWER(e.job_title) = 'caretaker'),
+    NULL, sysdate - 1, sysdate + 1, 'give medicine');
+INSERT INTO Task(task_id, animal_id, employee_id, location_id, assigned_at, deadline, description) 
+VALUES (SEQ_TASK.nextval, (SELECT a.id FROM animal a WHERE name IS NULL),
+    (SELECT e.id FROM employee WHERE LOWER(e.last_name) = 'kowalski' AND LOWER(e.job_title) = 'caretaker'),
+    NULL, sysdate, sysdate, 'feed');
+INSERT INTO Task(task_id, animal_id, employee_id, location_id, assigned_at, deadline, description) 
+VALUES (SEQ_TASK.nextval, NULL,
+    (SELECT e.id FROM employee WHERE LOWER(e.last_name) = 'stevenson' AND LOWER(e.job_title) = 'sanitor'),
+    (SELECT l.id FROM location l WHERE LOWER(a.name) = 'a2'), sysdate - 1, sysdate + 1, 'clean enclosure');
+INSERT INTO Task(task_id, animal_id, employee_id, location_id, assigned_at, deadline, description) 
+VALUES (SEQ_TASK.nextval, NULL,
+    (SELECT e.id FROM employee WHERE LOWER(e.last_name) = 'smith' AND LOWER(e.job_title) = 'sanitor'),
+    (SELECT l.id FROM location l WHERE name='A3'), sysdate - 1, sysdate + 1, 'clean enclosure');
+    
+-- WORK TIME  
+INSERT INTO Work_Time(shift_start, employee_id, shift_end) 
+VALUES (TO_TIMESTAMP('2019-06-01 09:0:00.742000000', 'YYYY-MM-DD HH24:MI:SS.FF'),
+    (SELECT e.id FROM employee e WHERE e.last_name = 'Wozniak'), 
+    TO_TIMESTAMP('2019-06-01 17:0:00.742000000', 'YYYY-MM-DD HH24:MI:SS.FF'));
+INSERT INTO Work_Time(shift_start, employee_id, shift_end) 
+VALUES (TO_TIMESTAMP('2019-06-02 09:0:00.742000000', 'YYYY-MM-DD HH24:MI:SS.FF'),
+    (SELECT e.id FROM employee e WHERE e.last_name = 'Wozniak'), 
+    TO_TIMESTAMP('2019-06-02 17:0:00.742000000', 'YYYY-MM-DD HH24:MI:SS.FF'));
+INSERT INTO Work_Time(shift_start, employee_id, shift_end) 
+VALUES (TO_TIMESTAMP('2019-06-03 09:0:00.742000000', 'YYYY-MM-DD HH24:MI:SS.FF'),
+    (SELECT e.id FROM employee e WHERE e.last_name = 'Wozniak'), 
+    TO_TIMESTAMP('2019-06-03 17:0:00.742000000', 'YYYY-MM-DD HH24:MI:SS.FF'));
+INSERT INTO Work_Time(shift_start, employee_id, shift_end) 
+VALUES (TO_TIMESTAMP('2019-06-04 09:0:00.742000000', 'YYYY-MM-DD HH24:MI:SS.FF'),
+    (SELECT e.id FROM employee e WHERE e.last_name = 'Wozniak'), 
+    TO_TIMESTAMP('2019-06-05 17:0:00.742000000', 'YYYY-MM-DD HH24:MI:SS.FF'));
+INSERT INTO Work_Time(shift_start, employee_id, shift_end) 
+VALUES (TO_TIMESTAMP('2019-06-06 09:0:00.742000000', 'YYYY-MM-DD HH24:MI:SS.FF'),
+    (SELECT e.id FROM employee e WHERE e.last_name = 'Wozniak'), 
+    TO_TIMESTAMP('2019-06-06 17:0:00.742000000', 'YYYY-MM-DD HH24:MI:SS.FF'));
+      
+-- EQUIPMENT
+INSERT INTO Equipment(id, location_id, name, description) 
+VALUES (SEQ_EQUIPMENT.nextval, (SELECT l.id FROM location l WHERE l.name = 'A1'), 
+    'very long stick', 'very long');
+INSERT INTO Equipment(id, location_id, name, description) 
+VALUES (SEQ_EQUIPMENT.nextval, (SELECT l.id FROM location l WHERE l.name = 'A1'), 
+    'long stick', 'long');
+INSERT INTO Equipment(id, location_id, name, description) 
+VALUES (SEQ_EQUIPMENT.nextval, (SELECT l.id FROM location l WHERE l.name = 'A1'), 
+    'medium sized stick', 'about average');
+INSERT INTO Equipment(id, location_id, name, description) 
+VALUES (SEQ_EQUIPMENT.nextval, (SELECT l.id FROM location l WHERE l.name = 'A1'), 
+    'short stick', 'short');
+INSERT INTO Equipment(id, location_id, name, description) 
+VALUES (SEQ_EQUIPMENT.nextval, (SELECT l.id FROM location l WHERE l.name = 'A1'), 
+    'very short stick', 'very short');
+
 CREATE OR REPLACE PROCEDURE add_animal_history
 ( p_animal_id       animal_history.animal_id%type
 , p_move_in_date      animal_history.move_in_date%type
@@ -120,4 +247,20 @@ END;
 /
 ALTER TRIGGER update_animal_history ENABLE;
 /
+
+UPDATE animal
+SET location = 'A3'
+WHERE id = (SELECT id FROM animal WHERE name = 'Antek');
+UPDATE animal
+SET location = 'A2'
+WHERE id = (SELECT id FROM animal WHERE name = 'Antek');
+UPDATE animal
+SET location = 'A3'
+WHERE id = (SELECT id FROM animal WHERE name = 'Antek');
+UPDATE animal
+SET location = 'A2'
+WHERE id = (SELECT id FROM animal WHERE name = 'Antek');
+UPDATE animal
+SET location = 'A3'
+WHERE id = (SELECT id FROM animal WHERE name = 'Antek');
 
