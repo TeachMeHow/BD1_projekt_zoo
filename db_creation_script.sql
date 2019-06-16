@@ -13,7 +13,9 @@ DROP TABLE Equipment CASCADE CONSTRAINTS;
 DROP TABLE Locations CASCADE CONSTRAINTS;
 DROP TABLE Species CASCADE CONSTRAINTS;
 DROP TABLE Tasks CASCADE CONSTRAINTS;
-DROP TABLE Work_Times CASCADE CONSTRAINTS;
+DROP TABLE Work_Times CASCADE CONSTRAINTS;    
+DROP VIEW Animal_Information_View;
+
 
 CREATE SEQUENCE seq_Equipment;
 CREATE SEQUENCE seq_Locations;
@@ -87,6 +89,14 @@ CREATE TABLE Work_Times (
   employee_id), 
   CONSTRAINT "start_must_be_before_end" 
     CHECK (shift_start <= shift_end));
+    
+    
+CREATE VIEW Animal_Information_View AS
+SELECT a.id, a.name, a.date_of_arrival, a.care_notes, 
+       l.type AS "location_type", l.name AS "location_name",
+       s.common_name AS "species_common_name", s.conservation_status 
+FROM animals a, locations l, species s
+WHERE a.location_id = l.id AND a.species_id = s.id;
 
 ALTER TABLE Tasks ADD CONSTRAINT FKTasks163950 FOREIGN KEY (employee_id) REFERENCES Employees (id) ON DELETE Cascade;
 ALTER TABLE Employees ADD CONSTRAINT FKEmployees843491 FOREIGN KEY (location_id) REFERENCES Locations (id) ON DELETE Set null;
@@ -232,7 +242,7 @@ BEGIN
 UPDATE animal_history
 SET move_out_date = p_move_in_date
 WHERE move_in_date = 
-	(SELECT max(move_in_date) FROM Animal_Historyory WHERE animal_id = p_animal_id);
+	(SELECT max(move_in_date) FROM Animal_History WHERE animal_id = p_animal_id);
 INSERT INTO animal_history (animal_id, move_in_date, move_out_date, location_id)
 VALUES(p_animal_id, p_move_in_date, NULL,  p_location_id);
 
@@ -252,16 +262,16 @@ ALTER TRIGGER update_animal_history ENABLE;
 -- FILL
 UPDATE Animals
 SET location_id = (SELECT id FROM Locations WHERE name = 'A3')
-WHERE id = (SELECT id FROM animal WHERE name = 'Antek');
+WHERE id = (SELECT id FROM Animals WHERE name = 'Antek');
 UPDATE Animals
 SET location_id = (SELECT id FROM Locations WHERE name = 'A3')
-WHERE id = (SELECT id FROM animal WHERE name = 'Agata');
+WHERE id = (SELECT id FROM Animals WHERE name = 'Agata');
 UPDATE Animals
 SET location_id = (SELECT id FROM Locations WHERE name = 'A3')
-WHERE id = (SELECT id FROM animal WHERE name IS NULL);
+WHERE id = (SELECT id FROM Animals WHERE name IS NULL);
 UPDATE Animals
 SET location_id = (SELECT id FROM Locations WHERE name = 'A2')
-WHERE id = (SELECT id FROM animal WHERE name = 'Piotrek');
+WHERE id = (SELECT id FROM Animals WHERE name = 'Piotrek');
 UPDATE Animals
 SET location_id = (SELECT id FROM Locations WHERE name = 'A3')
-WHERE id = (SELECT id FROM animal WHERE name = 'Grzesiek');
+WHERE id = (SELECT id FROM Animals WHERE name = 'Grzesiek');
